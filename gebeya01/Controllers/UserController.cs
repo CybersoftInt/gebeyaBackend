@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using gebeya01.Models;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using gebeya01.Models;
 
 namespace gebeya01.Controllers
 {
@@ -22,55 +19,98 @@ namespace gebeya01.Controllers
 
         // GET: api/User
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersons()
+        public async Task<IActionResult> GetUsers()
         {
-            return await _context.Persons.ToListAsync();
+            var users = await _context.Persons.Include(p => p.Address).ToListAsync();
+            return Ok(users);
         }
 
         // GET: api/User/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Person>> GetPerson(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
-            var person = await _context.Persons.FindAsync(id);
+            var user = await _context.Persons
+                .Include(p => p.Address)  // Include the related Address entity
+                .FirstOrDefaultAsync(p => p.UserID == id);
 
-            if (person == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return person;
+            var userWithAddress = new
+            {
+                user.UserID,
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                user.Password,
+                user.PhoneNumber,
+                user.Role,
+                Address = user.Address  // Directly use the navigation property
+            };
+
+            return Ok(userWithAddress);
         }
 
         // POST: api/User
         [HttpPost]
-        public async Task<ActionResult<Person>> PostPerson(Person person)
+        public async Task<IActionResult> PostUser([FromBody] Person person)
         {
-            if (person == null)
-            {
-                return BadRequest("The person field is required.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            // Ensure the address exists before adding the user
+            var address = await _context.Addresses.FindAsync(person.AddressID);
+            if (address == null)
+            {
+                return BadRequest("Address not found.");
+            }
+
+            // Add user
             _context.Persons.Add(person);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPerson", new { id = person.UserID }, person);
+            return CreatedAtAction(nameof(GetUser), new { id = person.UserID }, person);
         }
 
         // PUT: api/User/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, Person person)
+        public async Task<IActionResult> PutUser(int id, [FromBody] Person person)
         {
             if (id != person.UserID)
             {
                 return BadRequest();
             }
 
-            _context.Entry(person).State = EntityState.Modified;
+            var existingUser = await _context.Persons
+                .Include(p => p.Address)  // Include the related Address entity
+                .FirstOrDefaultAsync(p => p.UserID == id);
+
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
+
+            // Ensure the address exists before updating
+            var address = await _context.Addresses.FindAsync(person.AddressID);
+            if (address == null)
+            {
+                return BadRequest("Address not found.");
+            }
+
+            // Update user information
+            existingUser.FirstName = person.FirstName;
+            existingUser.LastName = person.LastName;
+            existingUser.Email = person.Email;
+            existingUser.Password = person.Password;
+            existingUser.PhoneNumber = person.PhoneNumber;
+            existingUser.Role = person.Role;
+            existingUser.AddressID = person.AddressID; // Update address ID
+
+            _context.Entry(existingUser).State = EntityState.Modified;
 
             try
             {
@@ -93,111 +133,24 @@ namespace gebeya01.Controllers
 
         // DELETE: api/User/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Person>> DeletePerson(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            var person = await _context.Persons.FindAsync(id);
-            if (person == null)
+            var user = await _context.Persons.FindAsync(id);
+
+            if (user == null)
             {
                 return NotFound();
             }
 
-            _context.Persons.Remove(person);
+            _context.Persons.Remove(user);
             await _context.SaveChangesAsync();
 
-            return person;
+            return NoContent();
         }
 
         private bool PersonExists(int id)
         {
             return _context.Persons.Any(e => e.UserID == id);
-        }
-
-        // Address-related actions
-        [HttpGet("addresses")]
-        public async Task<ActionResult<IEnumerable<Address>>> GetAddresses()
-        {
-            return await _context.Addresses.ToListAsync();
-        }
-
-        [HttpGet("addresses/{id}")]
-        public async Task<ActionResult<Address>> GetAddress(int id)
-        {
-            var address = await _context.Addresses.FindAsync(id);
-
-            if (address == null)
-            {
-                return NotFound();
-            }
-
-            return address;
-        }
-
-        [HttpPost("addresses")]
-        public async Task<ActionResult<Address>> PostAddress(Address address)
-        {
-            if (address.Person == null)
-            {
-                ModelState.AddModelError("$.address.person", "The JSON value could not be converted to gebeya01.Models.Person. Path: $, Property: person");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _context.Addresses.Add(address);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetAddress", new { id = address.AddressID }, address);
-        }
-
-        [HttpPut("addresses/{id}")]
-        public async Task<IActionResult> PutAddress(int id, Address address)
-        {
-            if (id != address.AddressID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(address).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AddressExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        [HttpDelete("addresses/{id}")]
-        public async Task<ActionResult<Address>> DeleteAddress(int id)
-        {
-            var address = await _context.Addresses.FindAsync(id);
-            if (address == null)
-            {
-                return NotFound();
-            }
-
-            _context.Addresses.Remove(address);
-            await _context.SaveChangesAsync();
-
-            return address;
-        }
-
-        private bool AddressExists(int id)
-        {
-            return _context.Addresses.Any(e => e.AddressID == id);
         }
     }
 }

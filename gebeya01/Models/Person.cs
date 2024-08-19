@@ -28,7 +28,7 @@ namespace gebeya01.Models
         public string? Password { get; set; }
 
         public int AddressID { get; set; }
-        public virtual Address Address { get; set; }
+        public  Address Address { get; set; }
 
         [StringLength(20)]
         public string? PhoneNumber { get; set; }

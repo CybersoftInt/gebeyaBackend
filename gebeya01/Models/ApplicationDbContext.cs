@@ -26,6 +26,10 @@ namespace gebeya01.Models
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Person>().HasKey(p => p.UserID);
+            modelBuilder.Entity<Person>()
+           .HasOne(p => p.Address)
+           .WithMany()
+           .HasForeignKey(p => p.AddressID);
             modelBuilder.Entity<Product>().HasKey(p => p.ProductID);
             modelBuilder.Entity<Address>().HasKey(a => a.AddressID);
             modelBuilder.Entity<Category>().HasKey(c => c.CategoryID);
