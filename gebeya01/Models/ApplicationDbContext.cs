@@ -25,14 +25,18 @@ namespace gebeya01.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<ShoppingCart>(entity =>
-            {
-                entity.HasKey(e => e.CartID);
-                // Configure other properties and relationships if needed
-            });
-
-            // Add configurations for other entities if necessary
+            modelBuilder.Entity<Person>().HasKey(p => p.UserID);
+            modelBuilder.Entity<Product>().HasKey(p => p.ProductID);
+            modelBuilder.Entity<Address>().HasKey(a => a.AddressID);
+            modelBuilder.Entity<Category>().HasKey(c => c.CategoryID);
+            modelBuilder.Entity<Order>().HasKey(o => o.OrderID);
+            modelBuilder.Entity<OrderItem>().HasKey(oi => oi.OrderItemID);
+            modelBuilder.Entity<ShoppingCart>().HasKey(sc => sc.CartID);
+            modelBuilder.Entity<CartItem>().HasKey(ci => ci.CartItemID);
+            modelBuilder.Entity<Payment>().HasKey(p => p.PaymentID);
+            modelBuilder.Entity<Shipment>().HasKey(s => s.ShipmentID);
+            modelBuilder.Entity<Wishlist>().HasKey(w => w.WishlistID);
+            modelBuilder.Entity<WishlistItem>().HasKey(wi => wi.WishlistItemID);
         }
     }
-
 }
