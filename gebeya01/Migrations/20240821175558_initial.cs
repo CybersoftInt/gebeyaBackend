@@ -17,7 +17,6 @@ namespace gebeya01.Migrations
                 {
                     AddressID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserID = table.Column<int>(type: "int", nullable: false),
                     StreetAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Region = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -53,19 +52,12 @@ namespace gebeya01.Migrations
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    AddressID = table.Column<int>(type: "int", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Persons", x => x.UserID);
-                    table.ForeignKey(
-                        name: "FK_Persons_Addresses_AddressID",
-                        column: x => x.AddressID,
-                        principalTable: "Addresses",
-                        principalColumn: "AddressID",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -120,20 +112,24 @@ namespace gebeya01.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ShoppingCarts",
+                name: "PersonAddress",
                 columns: table => new
                 {
-                    CartID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserID = table.Column<int>(type: "int", nullable: false),
-                    PersonUserID = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ShoppingCarts", x => x.CartID);
+                    table.PrimaryKey("PK_PersonAddress", x => new { x.UserId, x.AddressId });
                     table.ForeignKey(
-                        name: "FK_ShoppingCarts_Persons_PersonUserID",
-                        column: x => x.PersonUserID,
+                        name: "FK_PersonAddress_Addresses_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Addresses",
+                        principalColumn: "AddressID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PersonAddress_Persons_UserId",
+                        column: x => x.UserId,
                         principalTable: "Persons",
                         principalColumn: "UserID",
                         onDelete: ReferentialAction.Cascade);
@@ -235,34 +231,6 @@ namespace gebeya01.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CartItems",
-                columns: table => new
-                {
-                    CartItemID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CartID = table.Column<int>(type: "int", nullable: false),
-                    ProductID = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    ShoppingCartCartID = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CartItems", x => x.CartItemID);
-                    table.ForeignKey(
-                        name: "FK_CartItems_Products_ProductID",
-                        column: x => x.ProductID,
-                        principalTable: "Products",
-                        principalColumn: "ProductID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CartItems_ShoppingCarts_ShoppingCartCartID",
-                        column: x => x.ShoppingCartCartID,
-                        principalTable: "ShoppingCarts",
-                        principalColumn: "CartID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "WishlistItems",
                 columns: table => new
                 {
@@ -270,11 +238,18 @@ namespace gebeya01.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     WishlistID = table.Column<int>(type: "int", nullable: false),
                     ProductID = table.Column<int>(type: "int", nullable: false),
-                    AddedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    AddedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PersonUserID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WishlistItems", x => x.WishlistItemID);
+                    table.ForeignKey(
+                        name: "FK_WishlistItems_Persons_PersonUserID",
+                        column: x => x.PersonUserID,
+                        principalTable: "Persons",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_WishlistItems_Products_ProductID",
                         column: x => x.ProductID,
@@ -286,6 +261,60 @@ namespace gebeya01.Migrations
                         column: x => x.WishlistID,
                         principalTable: "Wishlists",
                         principalColumn: "WishlistID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShoppingCarts",
+                columns: table => new
+                {
+                    ShoppingCartID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    PersonUserID = table.Column<int>(type: "int", nullable: false),
+                    OrderItemID = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShoppingCarts", x => x.ShoppingCartID);
+                    table.ForeignKey(
+                        name: "FK_ShoppingCarts_OrderItems_OrderItemID",
+                        column: x => x.OrderItemID,
+                        principalTable: "OrderItems",
+                        principalColumn: "OrderItemID");
+                    table.ForeignKey(
+                        name: "FK_ShoppingCarts_Persons_PersonUserID",
+                        column: x => x.PersonUserID,
+                        principalTable: "Persons",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CartItems",
+                columns: table => new
+                {
+                    CartItemID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CartID = table.Column<int>(type: "int", nullable: false),
+                    ProductID = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ShoppingCartID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CartItems", x => x.CartItemID);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Products_ProductID",
+                        column: x => x.ProductID,
+                        principalTable: "Products",
+                        principalColumn: "ProductID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CartItems_ShoppingCarts_ShoppingCartID",
+                        column: x => x.ShoppingCartID,
+                        principalTable: "ShoppingCarts",
+                        principalColumn: "ShoppingCartID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -295,9 +324,9 @@ namespace gebeya01.Migrations
                 column: "ProductID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartItems_ShoppingCartCartID",
+                name: "IX_CartItems_ShoppingCartID",
                 table: "CartItems",
-                column: "ShoppingCartCartID");
+                column: "ShoppingCartID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderID",
@@ -320,10 +349,9 @@ namespace gebeya01.Migrations
                 column: "OrderID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Persons_AddressID",
-                table: "Persons",
-                column: "AddressID",
-                unique: true);
+                name: "IX_PersonAddress_AddressId",
+                table: "PersonAddress",
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryID",
@@ -336,8 +364,18 @@ namespace gebeya01.Migrations
                 column: "OrderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ShoppingCarts_OrderItemID",
+                table: "ShoppingCarts",
+                column: "OrderItemID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ShoppingCarts_PersonUserID",
                 table: "ShoppingCarts",
+                column: "PersonUserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WishlistItems_PersonUserID",
+                table: "WishlistItems",
                 column: "PersonUserID");
 
             migrationBuilder.CreateIndex(
@@ -363,10 +401,10 @@ namespace gebeya01.Migrations
                 name: "CartItems");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "Payments");
 
             migrationBuilder.DropTable(
-                name: "Payments");
+                name: "PersonAddress");
 
             migrationBuilder.DropTable(
                 name: "Shipments");
@@ -378,22 +416,25 @@ namespace gebeya01.Migrations
                 name: "ShoppingCarts");
 
             migrationBuilder.DropTable(
+                name: "Addresses");
+
+            migrationBuilder.DropTable(
+                name: "Wishlists");
+
+            migrationBuilder.DropTable(
+                name: "OrderItems");
+
+            migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "Wishlists");
-
-            migrationBuilder.DropTable(
-                name: "Categories");
-
-            migrationBuilder.DropTable(
                 name: "Persons");
 
             migrationBuilder.DropTable(
-                name: "Addresses");
+                name: "Categories");
         }
     }
 }

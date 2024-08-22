@@ -2,7 +2,7 @@
 {
     public class ShoppingCart
     {
-        public int CartID { get; set; }
+        public int ShoppingCartID { get; set; }
         public int UserID { get; set; }
 
         public virtual Person Person { get; set; }

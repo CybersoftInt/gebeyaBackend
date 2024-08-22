@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace gebeya01.Models
+namespace gebeya01.Dto
 {
-    public class Category
+    public class CategoryDto
     {
         [Key]
         public int CategoryID { get; set; }
@@ -13,6 +14,5 @@ namespace gebeya01.Models
 
         [StringLength(255)]
         public string? Description { get; set; }
-        public ICollection<Product> Products { get; set; }
     }
 }

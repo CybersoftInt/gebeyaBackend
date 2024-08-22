@@ -21,19 +21,24 @@ namespace gebeya01.Models
         [Required]
         [StringLength(100)]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [Required]
         [StringLength(255)]
         public string? Password { get; set; }
 
-        public int AddressID { get; set; }
-        public  Address Address { get; set; }
+       // public int AddressID { get; set; }
 
         [StringLength(20)]
         public string? PhoneNumber { get; set; }
 
         [StringLength(50)]
         public string? Role { get; set; }
+        public ICollection<Order> Orders { get; set; }
+        public ICollection<Wishlist> Wishlist { get; set; }
+        public ICollection<WishlistItem> wishlistItems { get; set; }
+        //public ICollection<OrderItem> orderitems { get; set; }
+        public ICollection<ShoppingCart> ShoppingCarts { get; set; }
+        public ICollection<PersonAddress> personAddresses { get; set; }
     }
 }

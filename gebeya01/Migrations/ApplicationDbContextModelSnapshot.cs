@@ -53,9 +53,6 @@ namespace gebeya01.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
                     b.HasKey("AddressID");
 
                     b.ToTable("Addresses");
@@ -78,14 +75,14 @@ namespace gebeya01.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("ShoppingCartCartID")
+                    b.Property<int>("ShoppingCartID")
                         .HasColumnType("int");
 
                     b.HasKey("CartItemID");
 
                     b.HasIndex("ProductID");
 
-                    b.HasIndex("ShoppingCartCartID");
+                    b.HasIndex("ShoppingCartID");
 
                     b.ToTable("CartItems");
                 });
@@ -216,9 +213,6 @@ namespace gebeya01.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
 
-                    b.Property<int>("AddressID")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -249,10 +243,22 @@ namespace gebeya01.Migrations
 
                     b.HasKey("UserID");
 
-                    b.HasIndex("AddressID")
-                        .IsUnique();
-
                     b.ToTable("Persons");
+                });
+
+            modelBuilder.Entity("gebeya01.Models.PersonAddress", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "AddressId");
+
+                    b.HasIndex("AddressId");
+
+                    b.ToTable("PersonAddress");
                 });
 
             modelBuilder.Entity("gebeya01.Models.Product", b =>
@@ -339,11 +345,14 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.ShoppingCart", b =>
                 {
-                    b.Property<int>("CartID")
+                    b.Property<int>("ShoppingCartID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShoppingCartID"));
+
+                    b.Property<int?>("OrderItemID")
+                        .HasColumnType("int");
 
                     b.Property<int>("PersonUserID")
                         .HasColumnType("int");
@@ -351,7 +360,9 @@ namespace gebeya01.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.HasKey("CartID");
+                    b.HasKey("ShoppingCartID");
+
+                    b.HasIndex("OrderItemID");
 
                     b.HasIndex("PersonUserID");
 
@@ -397,6 +408,9 @@ namespace gebeya01.Migrations
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("PersonUserID")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductID")
                         .HasColumnType("int");
 
@@ -404,6 +418,8 @@ namespace gebeya01.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("WishlistItemID");
+
+                    b.HasIndex("PersonUserID");
 
                     b.HasIndex("ProductID");
 
@@ -415,14 +431,14 @@ namespace gebeya01.Migrations
             modelBuilder.Entity("gebeya01.Models.CartItem", b =>
                 {
                     b.HasOne("gebeya01.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("CartItems")
                         .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("gebeya01.Models.ShoppingCart", "ShoppingCart")
                         .WithMany("CartItems")
-                        .HasForeignKey("ShoppingCartCartID")
+                        .HasForeignKey("ShoppingCartID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -434,7 +450,7 @@ namespace gebeya01.Migrations
             modelBuilder.Entity("gebeya01.Models.Order", b =>
                 {
                     b.HasOne("gebeya01.Models.Person", "Person")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("PersonUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -451,7 +467,7 @@ namespace gebeya01.Migrations
                         .IsRequired();
 
                     b.HasOne("gebeya01.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("OrderItems")
                         .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -472,21 +488,29 @@ namespace gebeya01.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("gebeya01.Models.Person", b =>
+            modelBuilder.Entity("gebeya01.Models.PersonAddress", b =>
                 {
                     b.HasOne("gebeya01.Models.Address", "Address")
-                        .WithOne("Person")
-                        .HasForeignKey("gebeya01.Models.Person", "AddressID")
+                        .WithMany("personAddresses")
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("gebeya01.Models.Person", "Person")
+                        .WithMany("personAddresses")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Address");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("gebeya01.Models.Product", b =>
                 {
                     b.HasOne("gebeya01.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -507,8 +531,12 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.ShoppingCart", b =>
                 {
+                    b.HasOne("gebeya01.Models.OrderItem", null)
+                        .WithMany("shoppingCarts")
+                        .HasForeignKey("OrderItemID");
+
                     b.HasOne("gebeya01.Models.Person", "Person")
-                        .WithMany()
+                        .WithMany("ShoppingCarts")
                         .HasForeignKey("PersonUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -519,7 +547,7 @@ namespace gebeya01.Migrations
             modelBuilder.Entity("gebeya01.Models.Wishlist", b =>
                 {
                     b.HasOne("gebeya01.Models.Person", "Person")
-                        .WithMany()
+                        .WithMany("Wishlist")
                         .HasForeignKey("PersonUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -529,6 +557,12 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.WishlistItem", b =>
                 {
+                    b.HasOne("gebeya01.Models.Person", "Person")
+                        .WithMany("wishlistItems")
+                        .HasForeignKey("PersonUserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("gebeya01.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductID")
@@ -538,8 +572,10 @@ namespace gebeya01.Migrations
                     b.HasOne("gebeya01.Models.Wishlist", "Wishlist")
                         .WithMany("WishlistItems")
                         .HasForeignKey("WishlistID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Person");
 
                     b.Navigation("Product");
 
@@ -548,8 +584,12 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.Address", b =>
                 {
-                    b.Navigation("Person")
-                        .IsRequired();
+                    b.Navigation("personAddresses");
+                });
+
+            modelBuilder.Entity("gebeya01.Models.Category", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("gebeya01.Models.Order", b =>
@@ -559,6 +599,31 @@ namespace gebeya01.Migrations
                     b.Navigation("Payments");
 
                     b.Navigation("Shipments");
+                });
+
+            modelBuilder.Entity("gebeya01.Models.OrderItem", b =>
+                {
+                    b.Navigation("shoppingCarts");
+                });
+
+            modelBuilder.Entity("gebeya01.Models.Person", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("ShoppingCarts");
+
+                    b.Navigation("Wishlist");
+
+                    b.Navigation("personAddresses");
+
+                    b.Navigation("wishlistItems");
+                });
+
+            modelBuilder.Entity("gebeya01.Models.Product", b =>
+                {
+                    b.Navigation("CartItems");
+
+                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("gebeya01.Models.ShoppingCart", b =>

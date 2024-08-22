@@ -7,8 +7,8 @@ namespace gebeya01.Models
         [Key]
         public int AddressID { get; set; }
 
-        public int UserID { get; set; }
-        //public virtual Person Person { get; set; }
+        //public int UserID { get; set; }
+        //public  Person Person { get; set; }
 
         [StringLength(100)]
         public string StreetAddress { get; set; }
@@ -23,5 +23,6 @@ namespace gebeya01.Models
         public string Country { get; set; }
 
         public bool IsDefault { get; set; }
+        public ICollection<PersonAddress> personAddresses { get; set; }
     }
 }

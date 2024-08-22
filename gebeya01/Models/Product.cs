@@ -23,7 +23,7 @@ public class Product
     public decimal Price { get; set; }
 
     public int CategoryID { get; set; }
-    public virtual Category Category { get; set; }
+
 
     [StringLength(100)]
     public string Color { get; set; }
@@ -38,5 +38,8 @@ public class Product
 
     [StringLength(100)]
     public string Brand { get; set; }
+    public virtual Category Category { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; }
+        public ICollection<CartItem> CartItems { get; set; }
     }
 }

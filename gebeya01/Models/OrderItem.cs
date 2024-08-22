@@ -10,5 +10,7 @@
 
         public virtual Order Order { get; set; }
         public virtual Product Product { get; set; }
+        public ICollection<ShoppingCart> shoppingCarts { get; set; }
+
     }
 }

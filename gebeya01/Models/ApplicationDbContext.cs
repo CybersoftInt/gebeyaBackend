@@ -23,11 +23,26 @@ namespace gebeya01.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+   
+            modelBuilder.Entity<PersonAddress>()
+                .HasKey(pa => new {pa.UserId, pa.AddressId});
+            modelBuilder.Entity<PersonAddress>()
+                .HasOne(p => p.Person)
+                .WithMany(pa => pa.personAddresses)
+                .HasForeignKey(c => c.AddressId);
+            modelBuilder.Entity<PersonAddress>()
+                .HasOne(p => p.Person)
+                .WithMany(pa => pa.personAddresses)
+                .HasForeignKey(c => c.UserId);
+            modelBuilder.Entity<WishlistItem>()
+                .HasOne(wi => wi.Wishlist)
+                .WithMany(w => w.WishlistItems)
+                .HasForeignKey(wi => wi.WishlistID)
+                .OnDelete(DeleteBehavior.Restrict); // or DeleteBehavior.SetNull
 
-            modelBuilder.Entity<Person>().HasKey(p => p.UserID);
+            /*modelBuilder.Entity<Person>().HasKey(p => p.UserID);
             modelBuilder.Entity<Person>()
-           .HasOne(p => p.Address)
+           .HasOne(p => p.Person)
            .WithMany()
            .HasForeignKey(p => p.AddressID);
             modelBuilder.Entity<Product>().HasKey(p => p.ProductID);
@@ -40,7 +55,7 @@ namespace gebeya01.Models
             modelBuilder.Entity<Payment>().HasKey(p => p.PaymentID);
             modelBuilder.Entity<Shipment>().HasKey(s => s.ShipmentID);
             modelBuilder.Entity<Wishlist>().HasKey(w => w.WishlistID);
-            modelBuilder.Entity<WishlistItem>().HasKey(wi => wi.WishlistItemID);
+            modelBuilder.Entity<WishlistItem>().HasKey(wi => wi.WishlistItemID);*/
         }
     }
 }

@@ -8,7 +8,6 @@
         public decimal TotalAmount { get; set; }
         public string Status { get; set; }
         public string ShippingAddress { get; set; }
-
         public virtual Person Person { get; set; }
         public virtual ICollection<OrderItem> OrderItems { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }

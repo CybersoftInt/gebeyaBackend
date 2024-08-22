@@ -1,4 +1,6 @@
+using gebeya01.Interfaces;
 using gebeya01.Models;
+using gebeya01.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace gebeya01
@@ -15,6 +17,12 @@ namespace gebeya01
 
             // Register HttpClient if needed
             builder.Services.AddHttpClient(); // Register HttpClient with default settings
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            builder.Services.AddScoped<IProduct, ProducRepository>();
+            builder.Services.AddScoped<ICategory, CategoryRepository>();
+            builder.Services.AddScoped<IPerson, PersonRepository>();
+            builder.Services.AddScoped<ICartItem, CartRepository>();
+
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
