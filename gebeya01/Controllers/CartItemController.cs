@@ -22,14 +22,14 @@ namespace gebeya01.Controllers
         }
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<CartItem>))]
-        public async Task<ICollection<CartItem>> GetCartItemsAsync()
+        public async Task<ICollection<CartItemsDto>> GetCartItemsAsync()
         {
-            var cartItem = await _cartItemRepository.GetCartItemsAsync();
-            var cartItemDtos = _mapper.Map<List<CartItemsDto>>(cartItem);
-            
-            return cartItemDtos;
+            var cartItems = await _cartItemRepository.GetCartItemsAsync();
+            var cartItemDtos = _mapper.Map<ICollection<CartItemsDto>>(cartItems);
 
+            return cartItemDtos;
         }
+
         [HttpGet("cartitems/{cartId}")]
         public async Task<IActionResult> GetCartItemsByCartId(int cartId)
         {

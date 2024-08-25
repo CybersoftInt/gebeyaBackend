@@ -35,9 +35,12 @@ public class Product
 
     [StringLength(255)]
     public string ImageURL { get; set; }
+    public bool IsInWishList { get; set; }
+    public bool IsInCart { get; set; }
 
-    [StringLength(100)]
+        [StringLength(100)]
     public string Brand { get; set; }
+
     public virtual Category Category { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
         public ICollection<CartItem> CartItems { get; set; }

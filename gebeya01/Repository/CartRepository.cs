@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using gebeya01.Dto;
 using gebeya01.Interfaces;
 using gebeya01.Models;
 using Microsoft.EntityFrameworkCore;
@@ -23,24 +24,21 @@ namespace gebeya01.Repository
 
         public async Task<CartItem> GetCartItemByIdAsync(int cartItemId)
         {
-            return await _context.CartItems
-                                 .Include(ci => ci.ShoppingCart)
-                                 .Include(ci => ci.Product)
-                                 .FirstOrDefaultAsync(ci => ci.CartItemID == cartItemId);
+            return await _context.CartItems.FindAsync(cartItemId);
         }
 
         public async Task<ICollection<CartItem>> GetCartItemsAsync()
         {
-            return await _context.CartItems.ToListAsync();
+            var cartItems = await _context.CartItems.ToListAsync();
+            return (cartItems);
         }
 
-        public async  Task<ICollection<CartItem>> GetCartItemsByCartIdAsync(int cartItemId)
+        public async Task<ICollection<CartItem>> GetCartItemsByCartIdAsync(int cartId)
         {
             return await _context.CartItems
-                                 .Where(ci => ci.CartItemID == cartItemId)
-                                 .Include(ci => ci.ShoppingCart)
-                                 .Include(ci => ci.Product)
+                                 .Where(ci => ci.ShoppingCartID == cartId)
                                  .ToListAsync();
         }
+
     }
 }

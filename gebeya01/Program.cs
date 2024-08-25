@@ -1,7 +1,11 @@
+using gebeya01.Helper;
 using gebeya01.Interfaces;
 using gebeya01.Models;
 using gebeya01.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace gebeya01
 {
@@ -22,13 +26,35 @@ namespace gebeya01
             builder.Services.AddScoped<ICategory, CategoryRepository>();
             builder.Services.AddScoped<IPerson, PersonRepository>();
             builder.Services.AddScoped<ICartItem, CartRepository>();
-
+            //builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddCors();
+
+
+/*
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+*/
 
             var app = builder.Build();
 
