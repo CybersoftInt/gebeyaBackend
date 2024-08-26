@@ -19,11 +19,26 @@ namespace gebeya01.Repository
 
         
 
-        public Task<bool> CreateProductAsync(int categoryId, Product product)
+        public async Task<bool> CreateProductAsync(int categoryId, Product product)
         {
-            var categoryEntity = _context.Categories.Where(a => a.CategoryID == categoryId).FirstOrDefault();
-            _context.Add(product);
-            return SaveAsync();
+            var categoryEntity = await _context.Categories
+                .Where(a => a.CategoryID == categoryId)
+                .FirstOrDefaultAsync();
+           
+            if (categoryEntity == null)
+            {
+                // Category not found
+                return false;
+            }
+            // Assign the category to the product if needed (e.g., if there is a navigation property)
+            product.Category = categoryEntity;
+
+            // Add the product to the context
+            _context.Products.Add(product);
+
+            // Save changes asynchronously
+
+            return await SaveAsync();
 
         }
         public async Task<bool> DeleteProductAsync(int productId)

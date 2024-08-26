@@ -14,7 +14,6 @@ namespace gebeya01.Models
         [StringLength(100)]
         public string FirstName { get; set; }
 
-        [Required]
         [StringLength(100)]
         public string? LastName { get; set; }
 
@@ -23,11 +22,17 @@ namespace gebeya01.Models
         [EmailAddress]
         public string Email { get; set; }
 
+
+
+        [StringLength(255)]
+        public string PasswordHash { get; set; } // Changed to PasswordHash
+
         [Required]
         [StringLength(255)]
-        public string? Password { get; set; }
+        public string PasswordSalt { get; set; } // Added PasswordSalt
 
-       // public int AddressID { get; set; }
+
+        // public int AddressID { get; set; }
 
         [StringLength(20)]
         public string? PhoneNumber { get; set; }
