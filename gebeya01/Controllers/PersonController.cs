@@ -3,6 +3,7 @@ using gebeya01.Dto;
 using gebeya01.Interfaces;
 using gebeya01.Models;
 using gebeya01.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace gebeya01.Controllers
 
         public PersonController(IPerson personRepository, IMapper mapper)
         {
-            
+
             _personRepository = personRepository;
             _mapper = mapper;
         }
@@ -81,5 +82,48 @@ namespace gebeya01.Controllers
 
             return Ok(personDto);
         }
+        [HttpPut("{userId:int}")]
+        public async Task<IActionResult> UpdatePersonAsync(int userId, [FromBody] PersonDto personDto)
+        {
+            if (userId != personDto.UserID)
+                return BadRequest("User ID mismatch");
+
+            if (!await _personRepository.PersonExistsAsync(userId))
+                return NotFound();
+
+            var person = _mapper.Map<Person>(personDto);
+            await _personRepository.UpdateAsync(person);
+
+            return NoContent();
+        }
+        [HttpDelete("{userId:int}")]
+        public async Task<IActionResult> DeletePersonAsync(int userId)
+        {
+            if (!await _personRepository.PersonExistsAsync(userId))
+                return NotFound();
+
+            await _personRepository.DeleteAsync(userId);
+            return NoContent();
+        }
+        [HttpPatch("{userId:int}")]
+        public async Task<IActionResult> UpdatePersonPartialAsync(int userId, [FromBody] PersonDto personDto)
+        {
+            if (userId != personDto.UserID)
+                return BadRequest("User ID mismatch");
+
+            if (!await _personRepository.PersonExistsAsync(userId))
+                return NotFound();
+
+            try
+            {
+                await _personRepository.UpdatePartialAsync(userId, personDto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
     }
 }

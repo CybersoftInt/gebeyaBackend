@@ -1,4 +1,6 @@
-﻿using gebeya01.Dto;
+﻿// src/Controllers/AuthController.cs
+using gebeya01.Dto;
+using gebeya01.Interfaces;
 using gebeya01.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,71 +15,109 @@ namespace gebeya01.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
+        private readonly IPerson _personRepository;
+        private readonly IConfiguration _configuration;
 
-        public IConfiguration _Configuration { get; }
-
-        public AuthController(IConfiguration configuration)
+        public AuthController(IPerson personRepository, IConfiguration configuration)
         {
-            _Configuration = configuration;
+            _personRepository = personRepository;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<Person>> Register(UserDto request)
         {
+            // Ensure all required fields are present
+            if (string.IsNullOrEmpty(request.FirstName))
+            {
+                return BadRequest("First name is required.");
+            }
+
+            // Hash the password
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            user.Username = request.Username;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-            return Ok(user);
+            var person = new Person
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName, // Handle optional last name
+                Email = request.Username,
+                PasswordHash = Convert.ToBase64String(passwordHash), // Store base64 string of password hash
+                PasswordSalt = Convert.ToBase64String(passwordSalt) // Store base64 string of password salt
+            };
+
+            try
+            {
+                // Save person to the database
+                await _personRepository.AddAsync(person);
+                return Ok(person);
+            }
+            catch (Exception ex)
+            {
+                // Log the error and return a proper error response
+                Console.WriteLine($"Error during registration: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+            }
         }
+
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            if (user.Username != request.Username)
+            // Find person by email (used as username here)
+            var person = await _personRepository.GetPersonByEmailAsync(request.Username);
+
+            if (person == null)
             {
                 return BadRequest("User not found.");
             }
-            if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                return BadRequest("wrong password");
-            }
-            string token = CreateToken(user);
 
+            // Decode stored password hash and salt
+            var storedHash = Convert.FromBase64String(person.PasswordHash);
+            var storedSalt = Convert.FromBase64String(person.PasswordSalt);
+
+            if (!VerifyPasswordHash(request.Password, storedHash, storedSalt))
+            {
+                return BadRequest("Wrong password.");
+            }
+
+            // Generate JWT token
+            var token = CreateToken(person);
             return Ok(token);
         }
-        private string CreateToken(User user)
+
+        private string CreateToken(Person person)
         {
-            List<Claim> claims = new List<Claim>
+            var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, person.Email)
             };
+
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
-                _Configuration.GetSection("AppSettings:Token").Value));
+                _configuration.GetSection("AppSettings:Token").Value));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.Now.AddDays(1),
                 signingCredentials: creds);
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-            return jwt;
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using(var hmac = new HMACSHA512())
+            using (var hmac = new HMACSHA512())
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-
             }
         }
-        private bool VerifyPasswordHash(string password,byte[] passwordHash,byte[] passwordSalt)
+
+        private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
-            using (var hmac = new HMACSHA512(passwordSalt))
+            using (var hmac = new HMACSHA512(storedSalt))
             {
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
+                return computedHash.SequenceEqual(storedHash);
             }
         }
     }

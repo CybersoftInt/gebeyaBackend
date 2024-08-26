@@ -44,7 +44,7 @@ namespace gebeya01.Controllers
             return Ok(productDtos);
         }
         [HttpPost]
-        [ProducesResponseType(201, Type = typeof(ProductDto))]
+        [ProducesResponseType(typeof(ProductDto), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         public async Task<ActionResult<ProductDto>> CreateProduct([FromQuery] int categoryId, [FromBody] ProductDto productCreate)
@@ -59,7 +59,7 @@ namespace gebeya01.Controllers
                 return BadRequest("Invalid category ID.");
             }
 
-                        try
+         try
             {
                 // Map DTO to entity
                 var productEntity = _mapper.Map<Product>(productCreate);
@@ -68,6 +68,7 @@ namespace gebeya01.Controllers
                 await _productRepository.CreateProductAsync(categoryId,productEntity);
 
                 bool saved = await _productRepository.SaveAsync();
+                
                 if (!saved)
                 {
                     return StatusCode(500, "A problem occurred while handling your request.");
@@ -77,7 +78,11 @@ namespace gebeya01.Controllers
                 var createdProductDto = _mapper.Map<ProductDto>(productEntity);
 
                 // Return the created product with a location header
-                return CreatedAtAction(nameof(GetProductAsync), new { productId = createdProductDto.ProductID }, createdProductDto);
+                return CreatedAtAction(
+                    nameof(GetProductAsync), 
+                    new { productId = createdProductDto.ProductID }, 
+                    createdProductDto
+                    );
             }
             catch (Exception ex)
             {
