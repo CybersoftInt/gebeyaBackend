@@ -12,8 +12,8 @@ using gebeya01.Models;
 namespace gebeya01.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240825111553_mythirdMigration")]
-    partial class mythirdMigration
+    [Migration("20240826124816_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -224,11 +224,15 @@ namespace gebeya01.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PasswordSalt")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");

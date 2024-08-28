@@ -117,6 +117,29 @@ namespace gebeya01.Repository
                 return false;
             }
         }
+        public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return Enumerable.Empty<ProductDto>();
+            }
+
+            return await _context.Products
+                .Where(p => p.Name.Contains(query) || p.Description.Contains(query))
+                .Take(7)
+                .Select(p => new ProductDto
+                {
+                    ProductID = p.ProductID,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Color = p.Color,
+                    Size = p.Size,
+                    Price = p.Price,
+                    Brand = p.Brand,
+                   
+                })
+                .ToListAsync();
+        }
 
 
     }

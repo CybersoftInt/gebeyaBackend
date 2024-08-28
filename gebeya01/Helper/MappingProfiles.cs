@@ -19,6 +19,14 @@ namespace gebeya01.Helper
 
             CreateMap<CartItem, CartItemsDto>();
             CreateMap<CartItemsDto, CartItem>();
+
+            CreateMap<WishlistDto, Wishlist>();
+            CreateMap<WishlistItemDto, WishlistItem>();
+
+            CreateMap<Wishlist, WishlistDto>();
+            CreateMap< WishlistItem, WishlistItemDto > ();
+
+
         }
     }
 }

@@ -11,9 +11,28 @@ namespace gebeya01.Repository
         {
             _context = context;
         }
+
+        public async Task<Category> AddCategoryAsync(Category category)
+        {
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
         public async Task<bool> CategoryExists(int id)
         {
             return await _context.Categories.AnyAsync(c => c.CategoryID == id);
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int categoryID)
+        {
+            var category = await _context.Categories.FindAsync(categoryID);
+            if (category == null)
+                return false;
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<ICollection<Category>> GetCategoriesAsync()

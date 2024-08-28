@@ -13,5 +13,6 @@ namespace gebeya01.Interfaces
         Task<bool> SaveAsync();
         Task<bool> DeleteProductAsync(int productId);
         Task<ProductDto> UpdateProductAsync(int productId, ProductDto productDto);
+        Task<IEnumerable<ProductDto>> SearchProductsAsync(string query);
     }
 }

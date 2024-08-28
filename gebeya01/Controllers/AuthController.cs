@@ -32,6 +32,23 @@ namespace gebeya01.Controllers
             {
                 return BadRequest("First name is required.");
             }
+            if (string.IsNullOrEmpty(request.Username))
+            {
+                return BadRequest("Username is required.");
+            }
+
+            if (string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("Password is required.");
+            }
+
+            //check if user is registered
+
+            var existingPerson = await _personRepository.GetPersonByEmailAsync(request.Username);
+            if (existingPerson != null)
+            {
+                return BadRequest("Username is already registered.");
+            }
 
             // Hash the password
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -42,7 +59,8 @@ namespace gebeya01.Controllers
                 LastName = request.LastName, // Handle optional last name
                 Email = request.Username,
                 PasswordHash = Convert.ToBase64String(passwordHash), // Store base64 string of password hash
-                PasswordSalt = Convert.ToBase64String(passwordSalt) // Store base64 string of password salt
+                PasswordSalt = Convert.ToBase64String(passwordSalt),
+                Role = "User" 
             };
 
             try
@@ -88,7 +106,8 @@ namespace gebeya01.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, person.Email)
+                new Claim(ClaimTypes.Name, person.Email),
+                new Claim(ClaimTypes.Role, person.Role)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

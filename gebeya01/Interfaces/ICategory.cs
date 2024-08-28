@@ -9,5 +9,7 @@ namespace gebeya01.Interfaces
         Task<ICollection<Product>> GetProductByCategory(int categoryId);
         //Task<Product> GetProductAsync(string name);
         Task<bool> CategoryExists(int id);
+        Task<Category> AddCategoryAsync(Category category);
+        Task<bool> DeleteCategoryAsync(int categoryID);
     }
 }

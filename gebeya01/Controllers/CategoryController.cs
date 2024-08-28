@@ -60,5 +60,40 @@ namespace gebeya01.Controllers
                 return BadRequest(ModelState);
             return Ok(catagoryDto);
         }
+        [HttpPost]
+        [ProducesResponseType(201, Type = typeof(CategoryDto))]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> AddCategoryAsync([FromBody] CategoryDto categoryDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var category = _mapper.Map<Category>(categoryDto);
+
+            var addedCategory = await _categoryRepository.AddCategoryAsync(category);
+
+            if (addedCategory == null)
+                return BadRequest("Category could not be added");
+
+            var addedCategoryDto = _mapper.Map<CategoryDto>(addedCategory);
+
+            return CreatedAtAction(nameof(GetCategoryAsync), new { categoryId = addedCategoryDto.CategoryID }, addedCategoryDto);
+        }
+        [HttpDelete("{categoryId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteCategoryAsync(int categoryId)
+        {
+            if (!await _categoryRepository.CategoryExists(categoryId))
+                return NotFound();
+
+            var result = await _categoryRepository.DeleteCategoryAsync(categoryId);
+
+            if (!result)
+                return BadRequest("Category could not be deleted");
+
+            return NoContent();
+        }
     }
 }

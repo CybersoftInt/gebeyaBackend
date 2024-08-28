@@ -26,6 +26,7 @@ namespace gebeya01
             builder.Services.AddScoped<ICategory, CategoryRepository>();
             builder.Services.AddScoped<IPerson, PersonRepository>();
             builder.Services.AddScoped<ICartItem, CartRepository>();
+            builder.Services.AddScoped<IWishlist, WishlistRepository>();
             //builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
             builder.Services.AddControllers();
@@ -35,26 +36,71 @@ namespace gebeya01
             builder.Services.AddCors();
 
 
-/*
-            builder.Services.AddAuthentication(options =>
+
+
+
+            // Configure JWT authentication
+            builder.Services.AddAuthentication(x =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
-*/
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]))
+                };
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+
+            
+
+
+
+
+
+
+
+
+
+
+
+            
+
+
+
+            // Configure authorization policies
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+                options.AddPolicy("UserOnly", policy => policy.RequireRole("user"));
+            });
+
 
             var app = builder.Build();
 
@@ -71,6 +117,14 @@ namespace gebeya01
                     .AllowAnyMethod()
                     .AllowAnyHeader();
             });
+
+
+
+
+
+
+
+
 
             app.UseAuthorization();
 

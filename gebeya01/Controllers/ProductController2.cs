@@ -140,7 +140,17 @@ namespace gebeya01.Controllers
             }
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return BadRequest("Search query cannot be empty.");
+            }
 
+            var products = await _productRepository.SearchProductsAsync(query);
+            return Ok(products);
+        }
 
 
 
