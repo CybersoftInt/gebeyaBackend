@@ -134,7 +134,7 @@ namespace gebeya01.Controllers
                 // Generate JWT token
                 var token = CreateToken(person);
 
-                return Ok(token);
+                return Ok(new { success = true, token });
             }
             catch (Exception ex)
             {

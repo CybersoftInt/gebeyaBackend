@@ -71,7 +71,7 @@ namespace gebeya01.Controllers
                 
                 if (!saved)
                 {
-                    return StatusCode(500, "A problem occurred while handling your request.");
+                    return StatusCode(500, "A problem occurred while handling(saving) your request.");
                 }
 
                 // Map the created product entity back to DTO
