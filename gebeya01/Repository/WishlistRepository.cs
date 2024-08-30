@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿// Repositories/WishlistRepository.cs
 using gebeya01.Interfaces;
 using gebeya01.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace gebeya01.Repository
+namespace gebeya01.Repositories
 {
     public class WishlistRepository : IWishlist
     {
@@ -14,35 +16,37 @@ namespace gebeya01.Repository
             _context = context;
         }
 
-        public async Task<Wishlist> GetWishlistAsync(int userId)
+        public async Task<Wishlist> GetWishlistByIdAsync(int id)
         {
-            return await _context.Wishlists
-                .Include(w => w.WishlistItems)
-                .FirstOrDefaultAsync(w => w.UserID == userId);
+            return await _context.Wishlists.Include(w => w.WishlistItems)
+                                          .FirstOrDefaultAsync(w => w.WishlistID == id);
         }
 
-        public async Task<WishlistItem> AddWishlistItemAsync(int wishlistId, int productId)
+        public async Task<IEnumerable<Wishlist>> GetAllWishlistsAsync()
         {
-            var wishlistItem = new WishlistItem
-            {
-                WishlistID = wishlistId,
-                ProductID = productId,
-                AddedDate = DateTime.UtcNow
-            };
+            return await _context.Wishlists.Include(w => w.WishlistItems).ToListAsync();
+        }
 
-            _context.WishlistItems.Add(wishlistItem);
+        public async Task AddWishlistAsync(Wishlist wishlist)
+        {
+            _context.Wishlists.Add(wishlist);
             await _context.SaveChangesAsync();
-            return wishlistItem;
         }
 
-        public async Task<bool> WishlistExistsAsync(int wishlistId)
+        public async Task UpdateWishlistAsync(Wishlist wishlist)
         {
-            return await _context.Wishlists.AnyAsync(w => w.WishlistID == wishlistId);
+            _context.Wishlists.Update(wishlist);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> SaveChangesAsync()
+        public async Task DeleteWishlistAsync(int id)
         {
-            return (await _context.SaveChangesAsync()) > 0;
+            var wishlist = await GetWishlistByIdAsync(id);
+            if (wishlist != null)
+            {
+                _context.Wishlists.Remove(wishlist);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

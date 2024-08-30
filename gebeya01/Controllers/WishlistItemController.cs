@@ -2,44 +2,70 @@
 using gebeya01.Dto;
 using gebeya01.Interfaces;
 using gebeya01.Models;
-using gebeya01.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace gebeya01.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class WishlistItemController : ControllerBase
     {
-        private readonly IWishlist _wishlistRepository;
+        private readonly IWishlistItem _wishlistItemRepository;
         private readonly IMapper _mapper;
+        private readonly IPerson _personRepository; // Added for user validation (if needed)
 
-        public WishlistItemController(IWishlist wishlistRepository, IMapper mapper)
+        public WishlistItemController(IWishlistItem wishlistItemRepository, IMapper mapper, IPerson personRepository)
         {
-            _wishlistRepository = wishlistRepository;
+            _wishlistItemRepository = wishlistItemRepository;
             _mapper = mapper;
+            _personRepository = personRepository;
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddToWishlist([FromBody] WishlistItemDto wishlistItemDto)
         {
-            var wishlist = await _wishlistRepository.GetWishlistAsync(wishlistItemDto.WishlistID);
-            if (wishlist == null)
-                return NotFound("Wishlist not found");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            if (!await _wishlistRepository.WishlistExistsAsync(wishlistItemDto.WishlistID))
-                return NotFound("Wishlist not found");
+            // Optionally validate that the user exists (if required)
+            var personExists = await _personRepository.PersonExistsAsync(wishlistItemDto.UserID);
+            if (!personExists)
+            {
+                return NotFound("User not found");
+            }
 
-            var wishlistItem = await _wishlistRepository.AddWishlistItemAsync(
-                wishlistItemDto.WishlistID,
-                wishlistItemDto.ProductID);
+            var wishlistItem = _mapper.Map<WishlistItem>(wishlistItemDto);
 
-            if (!await _wishlistRepository.SaveChangesAsync())
-                return StatusCode(500, "Something went wrong while saving the wishlist item");
+            await _wishlistItemRepository.AddWishlistItemAsync(wishlistItem);
 
             var wishlistItemToReturn = _mapper.Map<WishlistItemDto>(wishlistItem);
-            return CreatedAtAction(nameof(AddToWishlist), new { id = wishlistItemToReturn.WishlistItemID }, wishlistItemToReturn);
+
+            return CreatedAtAction(nameof(GetWishlistItem), new { id = wishlistItemToReturn.WishlistItemID }, wishlistItemToReturn);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetWishlistItem(int id)
+        {
+            var wishlistItem = await _wishlistItemRepository.GetWishlistItemByIdAsync(id);
+            if (wishlistItem == null)
+                return NotFound();
+
+            var wishlistItemDto = _mapper.Map<WishlistItemDto>(wishlistItem);
+
+            return Ok(wishlistItemDto);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteWishlistItem(int id)
+        {
+            var wishlistItem = await _wishlistItemRepository.GetWishlistItemByIdAsync(id);
+            if (wishlistItem == null)
+                return NotFound();
+
+            await _wishlistItemRepository.DeleteWishlistItemAsync(id);
+
+            return NoContent();
         }
     }
 }

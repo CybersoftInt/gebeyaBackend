@@ -2,6 +2,7 @@
 using gebeya01.Dto;
 using gebeya01.Interfaces;
 using gebeya01.Models;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -101,6 +102,45 @@ namespace gebeya01.Controllers
             var token = CreateToken(person);
             return Ok(token);
         }
+        [HttpPost("google")]
+        public async Task<ActionResult<string>> GoogleSignIn([FromBody] GoogleSignInRequest request)
+        {
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
+
+                if (payload == null)
+                {
+                    return Unauthorized("Invalid Google token.");
+                }
+
+                // Find or create a user based on the Google payload
+                var person = await _personRepository.GetPersonByEmailAsync(payload.Email);
+
+                if (person == null)
+                {
+                    person = new Person
+                    {
+                        FirstName = payload.GivenName,
+                        LastName = payload.FamilyName,
+                        Email = payload.Email,
+                        Role = "User"
+                    };
+
+                    // Save new person to the database
+                    await _personRepository.AddAsync(person);
+                }
+
+                // Generate JWT token
+                var token = CreateToken(person);
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
+            }
+        }
 
         private string CreateToken(Person person)
         {
@@ -138,6 +178,10 @@ namespace gebeya01.Controllers
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
                 return computedHash.SequenceEqual(storedHash);
             }
+        }
+        public class GoogleSignInRequest
+        {
+            public string IdToken { get; set; }
         }
     }
 }

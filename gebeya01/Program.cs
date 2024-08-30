@@ -1,6 +1,7 @@
 using gebeya01.Helper;
 using gebeya01.Interfaces;
 using gebeya01.Models;
+using gebeya01.Repositories;
 using gebeya01.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ namespace gebeya01
             builder.Services.AddScoped<IPerson, PersonRepository>();
             builder.Services.AddScoped<ICartItem, CartRepository>();
             builder.Services.AddScoped<IWishlist, WishlistRepository>();
+            builder.Services.AddScoped<IWishlistItem, WishlistItemRepository>();
             //builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
             builder.Services.AddControllers();
@@ -46,7 +48,7 @@ namespace gebeya01
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(x =>
             {
-                x.RequireHttpsMetadata = false;
+                x.RequireHttpsMetadata = true;
                 x.SaveToken = true;
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -111,6 +113,8 @@ namespace gebeya01
                 app.UseSwaggerUI();
             }
 
+
+            app.UseHttpsRedirection();
             app.UseCors(builder =>
             {
                 builder.AllowAnyOrigin()
@@ -125,7 +129,7 @@ namespace gebeya01
 
 
 
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

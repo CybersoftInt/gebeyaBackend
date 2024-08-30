@@ -40,8 +40,9 @@ public class Product
 
         [StringLength(100)]
     public string Brand { get; set; }
+        public ICollection<WishlistItem> WishlistItems { get; set; }
 
-    public virtual Category Category { get; set; }
+        public virtual Category Category { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
         public ICollection<CartItem> CartItems { get; set; }
     }

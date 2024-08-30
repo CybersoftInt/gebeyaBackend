@@ -6,9 +6,10 @@ namespace gebeya01.Interfaces
 {
     public interface IWishlist
     {
-        Task<Wishlist> GetWishlistAsync(int userId);
-        Task<WishlistItem> AddWishlistItemAsync(int wishlistId, int productId);
-        Task<bool> WishlistExistsAsync(int wishlistId);
-        Task<bool> SaveChangesAsync();
+        Task<Wishlist> GetWishlistByIdAsync(int id);
+        Task<IEnumerable<Wishlist>> GetAllWishlistsAsync();
+        Task AddWishlistAsync(Wishlist wishlist);
+        Task UpdateWishlistAsync(Wishlist wishlist);
+        Task DeleteWishlistAsync(int id);
     }
 }

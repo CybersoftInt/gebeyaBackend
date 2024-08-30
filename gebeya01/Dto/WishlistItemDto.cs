@@ -12,6 +12,8 @@ namespace gebeya01.Dto
         public int WishlistID { get; set; }
 
         [Required]
+        public int UserID { get; set; }
+        [Required]
         public int ProductID { get; set; }
 
         [Required]

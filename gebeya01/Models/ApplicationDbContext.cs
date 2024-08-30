@@ -23,39 +23,53 @@ namespace gebeya01.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-   
+            // Configuration for PersonAddress
             modelBuilder.Entity<PersonAddress>()
-                .HasKey(pa => new {pa.UserId, pa.AddressId});
+                .HasKey(pa => new { pa.UserId, pa.AddressId });
             modelBuilder.Entity<PersonAddress>()
-                .HasOne(p => p.Person)
-                .WithMany(pa => pa.personAddresses)
-                .HasForeignKey(c => c.AddressId);
+                .HasOne(pa => pa.Person)
+                .WithMany(p => p.personAddresses)
+                .HasForeignKey(pa => pa.UserId);
             modelBuilder.Entity<PersonAddress>()
-                .HasOne(p => p.Person)
-                .WithMany(pa => pa.personAddresses)
-                .HasForeignKey(c => c.UserId);
+                .HasOne(pa => pa.Address)
+                .WithMany()
+                .HasForeignKey(pa => pa.AddressId);
+
+            // Configuration for Wishlist
+            modelBuilder.Entity<Wishlist>()
+                .HasOne(w => w.Person)
+                .WithMany(p => p.Wishlist)
+                .HasForeignKey(w => w.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuration for WishlistItem
             modelBuilder.Entity<WishlistItem>()
                 .HasOne(wi => wi.Wishlist)
                 .WithMany(w => w.WishlistItems)
                 .HasForeignKey(wi => wi.WishlistID)
-                .OnDelete(DeleteBehavior.Restrict); // or DeleteBehavior.SetNull
+                .OnDelete(DeleteBehavior.Restrict);
 
-            /*modelBuilder.Entity<Person>().HasKey(p => p.UserID);
-            modelBuilder.Entity<Person>()
-           .HasOne(p => p.Person)
-           .WithMany()
-           .HasForeignKey(p => p.AddressID);
-            modelBuilder.Entity<Product>().HasKey(p => p.ProductID);
-            modelBuilder.Entity<Address>().HasKey(a => a.AddressID);
-            modelBuilder.Entity<Category>().HasKey(c => c.CategoryID);
-            modelBuilder.Entity<Order>().HasKey(o => o.OrderID);
-            modelBuilder.Entity<OrderItem>().HasKey(oi => oi.OrderItemID);
-            modelBuilder.Entity<ShoppingCart>().HasKey(sc => sc.CartID);
-            modelBuilder.Entity<CartItem>().HasKey(ci => ci.CartItemID);
-            modelBuilder.Entity<Payment>().HasKey(p => p.PaymentID);
-            modelBuilder.Entity<Shipment>().HasKey(s => s.ShipmentID);
-            modelBuilder.Entity<Wishlist>().HasKey(w => w.WishlistID);
-            modelBuilder.Entity<WishlistItem>().HasKey(wi => wi.WishlistItemID);*/
-        }
+            modelBuilder.Entity<WishlistItem>()
+                .HasOne(wi => wi.Product)
+                .WithMany() // If Product has no navigation property to WishlistItem, leave it empty
+                .HasForeignKey(wi => wi.ProductID)
+                .OnDelete(DeleteBehavior.Restrict);
+        
+
+        /* Additional entity configurations
+        modelBuilder.Entity<Person>().HasKey(p => p.UserID);
+        modelBuilder.Entity<Product>().HasKey(p => p.ProductID);
+        modelBuilder.Entity<Address>().HasKey(a => a.AddressID);
+        modelBuilder.Entity<Category>().HasKey(c => c.CategoryID);
+        modelBuilder.Entity<Order>().HasKey(o => o.OrderID);
+        modelBuilder.Entity<OrderItem>().HasKey(oi => oi.OrderItemID);
+        modelBuilder.Entity<ShoppingCart>().HasKey(sc => sc.CartID);
+        modelBuilder.Entity<CartItem>().HasKey(ci => ci.CartItemID);
+        modelBuilder.Entity<Payment>().HasKey(p => p.PaymentID);
+        modelBuilder.Entity<Shipment>().HasKey(s => s.ShipmentID);
+        modelBuilder.Entity<Wishlist>().HasKey(w => w.WishlistID);
+        modelBuilder.Entity<WishlistItem>().HasKey(wi => wi.WishlistItemID);*/
     }
+
+}
 }
