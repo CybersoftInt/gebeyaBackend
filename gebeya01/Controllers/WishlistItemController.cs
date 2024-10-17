@@ -3,6 +3,7 @@ using gebeya01.Dto;
 using gebeya01.Interfaces;
 using gebeya01.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace gebeya01.Controllers
@@ -12,14 +13,16 @@ namespace gebeya01.Controllers
     public class WishlistItemController : ControllerBase
     {
         private readonly IWishlistItem _wishlistItemRepository;
+        private readonly IWishlist _wishlistRepository;
+        private readonly IProduct _productRepository;
         private readonly IMapper _mapper;
-        private readonly IPerson _personRepository; // Added for user validation (if needed)
 
-        public WishlistItemController(IWishlistItem wishlistItemRepository, IMapper mapper, IPerson personRepository)
+        public WishlistItemController(IWishlistItem wishlistItemRepository, IWishlist wishlistRepository, IProduct productRepository,IMapper mapper)
         {
             _wishlistItemRepository = wishlistItemRepository;
+            _wishlistRepository = wishlistRepository;
+            _productRepository = productRepository;
             _mapper = mapper;
-            _personRepository = personRepository;
         }
 
         [HttpPost("add")]
@@ -28,16 +31,32 @@ namespace gebeya01.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Optionally validate that the user exists (if required)
-            var personExists = await _personRepository.PersonExistsAsync(wishlistItemDto.UserID);
-            if (!personExists)
+            // Validate that the wishlist exists
+            var wishlistExists = await _wishlistRepository.GetWishlistByIdAsync(wishlistItemDto.WishlistID);
+            if (wishlistExists == null)
             {
-                return NotFound("User not found");
+                return NotFound("Wishlist not found");
             }
+
+            // If needed, validate the product exists (optional)
+             var productExists = await _productRepository.GetProductAsync(wishlistItemDto.ProductID);
+             if (productExists == null)
+             {
+                 return NotFound("Product not found");
+             }
 
             var wishlistItem = _mapper.Map<WishlistItem>(wishlistItemDto);
 
-            await _wishlistItemRepository.AddWishlistItemAsync(wishlistItem);
+            try
+            {
+                await _wishlistItemRepository.AddWishlistItemAsync(wishlistItem);
+            }
+            catch (DbUpdateException ex)
+            {
+
+                // Log the exception or handle it as needed
+                return StatusCode(500, "An error occurred while saving the wishlist item.");
+            }
 
             var wishlistItemToReturn = _mapper.Map<WishlistItemDto>(wishlistItem);
 

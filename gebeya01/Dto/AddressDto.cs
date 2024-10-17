@@ -1,26 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using gebeya01.Models;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace gebeya01.Models
+namespace gebeya01.Dto
 {
-    public class Address
+    public class AddressDto
     {
         [Key]
         public int AddressID { get; set; }
-        [ForeignKey("Person")]
         public int UserID { get; set; }
-        public  Person Person { get; set; }
 
         [StringLength(100)]
         public string StreetAddress { get; set; }
 
-        [StringLength(50)]
         public string City { get; set; }
 
-        [StringLength(50)]
         public string Region { get; set; }
 
-        [StringLength(50)]
         public string Country { get; set; }
         public int ZIPCode { get; set; }
 

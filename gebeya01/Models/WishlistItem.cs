@@ -15,7 +15,6 @@ namespace gebeya01.Models
         public int ProductID { get; set; }
         [Required]
         public DateTime AddedDate { get; set; }
-        public Person Person { get; set; }
 
         public virtual Wishlist Wishlist { get; set; }
         public virtual Product Product { get; set; }

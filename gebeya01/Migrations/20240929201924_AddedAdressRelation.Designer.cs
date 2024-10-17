@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using gebeya01.Models;
 
@@ -11,9 +12,11 @@ using gebeya01.Models;
 namespace gebeya01.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240929201924_AddedAdressRelation")]
+    partial class AddedAdressRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,9 +57,6 @@ namespace gebeya01.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZIPCode")
                         .HasColumnType("int");
 
                     b.HasKey("AddressID");

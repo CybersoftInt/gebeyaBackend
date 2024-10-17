@@ -35,7 +35,7 @@ public class PaymentController : ControllerBase
             last_name = request.LastName,
             phone_number = request.PhoneNumber,
             tx_ref = request.TxRef,
-            return_url = "http://localhost:3000/" // Change to your front-end URL
+            return_url = "https://localhost:3000/" // Change to your front-end URL
         };
 
         var header = new HttpRequestMessage

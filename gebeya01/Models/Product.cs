@@ -30,7 +30,7 @@ public class Product
 
     [StringLength(32)]
     public string Size { get; set; }
-
+     [Required]
     public int StockQuantity { get; set; }
 
     [StringLength(255)]

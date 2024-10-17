@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using gebeya01.Models;
 
@@ -11,9 +12,11 @@ using gebeya01.Models;
 namespace gebeya01.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240831153409_RemoveUserIdRedundant2")]
+    partial class RemoveUserIdRedundant2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,15 +56,7 @@ namespace gebeya01.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZIPCode")
-                        .HasColumnType("int");
-
                     b.HasKey("AddressID");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Addresses");
                 });
@@ -459,17 +454,6 @@ namespace gebeya01.Migrations
                     b.ToTable("WishlistItems");
                 });
 
-            modelBuilder.Entity("gebeya01.Models.Address", b =>
-                {
-                    b.HasOne("gebeya01.Models.Person", "Person")
-                        .WithMany("Address")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("gebeya01.Models.CartItem", b =>
                 {
                     b.HasOne("gebeya01.Models.Product", "Product")
@@ -626,8 +610,6 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.Person", b =>
                 {
-                    b.Navigation("Address");
-
                     b.Navigation("Orders");
 
                     b.Navigation("ShoppingCarts");

@@ -77,7 +77,9 @@ namespace gebeya01.Controllers
 
             var addedCategoryDto = _mapper.Map<CategoryDto>(addedCategory);
 
-            return CreatedAtAction(nameof(GetCategoryAsync), new { categoryId = addedCategoryDto.CategoryID }, addedCategoryDto);
+            CreatedAtAction(nameof(GetCategoryAsync), new { categoryId = addedCategoryDto.CategoryID }, addedCategoryDto);
+            return Ok(addedCategoryDto);
+
         }
         [HttpDelete("{categoryId}")]
         [ProducesResponseType(204)]

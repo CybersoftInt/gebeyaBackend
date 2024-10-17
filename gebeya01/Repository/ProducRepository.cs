@@ -91,6 +91,8 @@ namespace gebeya01.Repository
             existingProduct.Name = productDto.Name;
             existingProduct.CategoryID = productDto.CategoryID;
             existingProduct.Price = productDto.Price;
+            existingProduct.Description = productDto.Description;
+            existingProduct.ImageURL = productDto.ImageURL;
             // Update other fields as necessary
 
             _context.Products.Update(existingProduct);

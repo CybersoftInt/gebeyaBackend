@@ -35,15 +35,16 @@ namespace gebeya01.Models
         // public int AddressID { get; set; }
 
         [StringLength(20)]
+        [Phone]
         public string? PhoneNumber { get; set; }
 
         [StringLength(50)]
         public string? Role { get; set; }
         public ICollection<Order> Orders { get; set; }
+        public ICollection<Address> Address { get; set; }
         public ICollection<Wishlist> Wishlist { get; set; }
         public ICollection<WishlistItem> wishlistItems { get; set; }
         //public ICollection<OrderItem> orderitems { get; set; }
         public ICollection<ShoppingCart> ShoppingCarts { get; set; }
-        public ICollection<PersonAddress> personAddresses { get; set; }
     }
 }

@@ -29,6 +29,7 @@ namespace gebeya01
             builder.Services.AddScoped<ICartItem, CartRepository>();
             builder.Services.AddScoped<IWishlist, WishlistRepository>();
             builder.Services.AddScoped<IWishlistItem, WishlistItemRepository>();
+            builder.Services.AddScoped<IAddress, AddressRepository>();
             //builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
             builder.Services.AddControllers();

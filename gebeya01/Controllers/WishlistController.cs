@@ -13,7 +13,7 @@ namespace gebeya01.Controllers
     {
         private readonly IWishlist _wishlistRepository;
         private readonly IWishlistItem _wishlistItemRepository;
-        private readonly IPerson _personRepository; // Updated to use IPerson
+        private readonly IPerson _personRepository;
 
         public WishlistController(IWishlist wishlistRepository, IWishlistItem wishlistItemRepository, IPerson personRepository)
         {
@@ -34,7 +34,7 @@ namespace gebeya01.Controllers
             var wishlistDto = new WishlistDto
             {
                 WishlistID = wishlist.WishlistID,
-                UserID = wishlist.UserID,
+                UserID = wishlist.Person.UserID, // Accessing UserID through Person
                 Name = wishlist.Name,
                 CreatedDate = wishlist.CreatedDate
             };
@@ -53,7 +53,7 @@ namespace gebeya01.Controllers
                 wishlistDtos.Add(new WishlistDto
                 {
                     WishlistID = wishlist.WishlistID,
-                    UserID = wishlist.UserID,
+                    UserID = wishlist.Person.UserID, // Accessing UserID through Person
                     Name = wishlist.Name,
                     CreatedDate = wishlist.CreatedDate
                 });
@@ -71,15 +71,15 @@ namespace gebeya01.Controllers
             }
 
             // Validate that the user exists
-            var userExists = await _personRepository.PersonExistsAsync(wishlistDto.UserID);
-            if (!userExists)
+            var person = await _personRepository.GetPersonAsync(wishlistDto.UserID);
+            if (person == null)
             {
                 return NotFound("User not found");
             }
 
             var wishlist = new Wishlist
             {
-                UserID = wishlistDto.UserID,
+                Person = person, // Set the Person navigation property directly
                 Name = wishlistDto.Name,
                 CreatedDate = wishlistDto.CreatedDate
             };
@@ -103,7 +103,14 @@ namespace gebeya01.Controllers
                 return NotFound();
             }
 
-            existingWishlist.UserID = wishlistDto.UserID;
+            // Validate that the user exists
+            var person = await _personRepository.GetPersonAsync(wishlistDto.UserID);
+            if (person == null)
+            {
+                return NotFound("User not found");
+            }
+
+            existingWishlist.Person = person; // Update the Person navigation property
             existingWishlist.Name = wishlistDto.Name;
             existingWishlist.CreatedDate = wishlistDto.CreatedDate;
 
@@ -129,21 +136,46 @@ namespace gebeya01.Controllers
         [HttpGet("{wishlistId}/items")]
         public async Task<IActionResult> GetItemsByWishlistId(int wishlistId)
         {
+            // Retrieve the wishlist items for the given wishlistId
             var items = await _wishlistItemRepository.GetItemsByWishlistIdAsync(wishlistId);
-            var itemDtos = new List<WishlistItemDto>();
 
-            foreach (var item in items)
+            if (items == null || !items.Any())
             {
-                itemDtos.Add(new WishlistItemDto
-                {
-                    WishlistItemID = item.WishlistItemID,
-                    WishlistID = item.WishlistID,
-                    ProductID = item.ProductID,
-                    AddedDate = item.AddedDate
-                });
+                // Return NotFound if no items are found for the given wishlistId
+                return NotFound("No items found for this wishlist.");
             }
 
+            // Map the WishlistItem entities to DTOs
+            var itemDtos = items.Select(item => new WishlistItemDto
+            {
+                WishlistItemID = item.WishlistItemID,
+                WishlistID = item.WishlistID,
+                ProductID = item.ProductID,
+                AddedDate = item.AddedDate
+            }).ToList();
+
+            // Return the list of WishlistItem DTOs
             return Ok(itemDtos);
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetWishlistsByUserId(int userId)
+        {
+            var wishlists = await _wishlistRepository.GetWishlistByUserIdAsync(userId);
+            if (wishlists == null || !wishlists.Any())
+            {
+                return NotFound();
+            }
+
+            var wishlistDtos = wishlists.Select(w => new WishlistDto
+            {
+                WishlistID = w.WishlistID,
+                UserID = w.Person?.UserID ?? 0, // Use null-conditional operator
+                Name = w.Name,
+                CreatedDate = w.CreatedDate
+            }).ToList();
+
+            return Ok(wishlistDtos);
         }
     }
 }

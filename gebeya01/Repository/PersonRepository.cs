@@ -3,6 +3,7 @@ using gebeya01.Dto;
 using gebeya01.Interfaces;
 using gebeya01.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace gebeya01.Repository
 {
@@ -56,7 +57,9 @@ namespace gebeya01.Repository
         public async Task DeleteAsync(int userId)
         {
             var person = await _context.Persons.FindAsync(userId);
-            if (person != null)
+            var role = person.Role;
+
+            if (person != null && role != "Admin" && role != "admin")
             {
                 _context.Persons.Remove(person);
                 await _context.SaveChangesAsync();
@@ -68,7 +71,8 @@ namespace gebeya01.Repository
             var person = await _context.Persons.FindAsync(userId);
             if (person == null)
                 throw new KeyNotFoundException("Person not found");
-
+            if (personDto.UserID != null)
+                person.UserID = personDto.UserID;
             // Update only the fields provided in the DTO
             if (personDto.FirstName != null)
                 person.FirstName = personDto.FirstName;
@@ -79,18 +83,33 @@ namespace gebeya01.Repository
             if (personDto.Email != null)
                 person.Email = personDto.Email;
 
-            if (personDto.Password != null)
-                person.PasswordSalt = personDto.Password;
+            if (!string.IsNullOrEmpty(personDto.Password))
+            {
+                // Hash the new password and update the password hash and salt
+                CreatePasswordHash(personDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                person.PasswordHash = Convert.ToBase64String(passwordHash);
+                person.PasswordSalt = Convert.ToBase64String(passwordSalt);
+            }
 
             if (personDto.PhoneNumber != null)
                 person.PhoneNumber = personDto.PhoneNumber;
 
-            if (personDto.Role != null)
+            if (!string.IsNullOrEmpty(personDto.Role))
                 person.Role = personDto.Role;
 
             _context.Persons.Update(person);
             await _context.SaveChangesAsync();
         }
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        
     }
 }
 

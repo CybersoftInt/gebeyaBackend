@@ -20,26 +20,14 @@ namespace gebeya01.Models
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<Wishlist> Wishlists { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
+        public DbSet<ContactForm>  contactForms {  get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configuration for PersonAddress
-            modelBuilder.Entity<PersonAddress>()
-                .HasKey(pa => new { pa.UserId, pa.AddressId });
-            modelBuilder.Entity<PersonAddress>()
-                .HasOne(pa => pa.Person)
-                .WithMany(p => p.personAddresses)
-                .HasForeignKey(pa => pa.UserId);
-            modelBuilder.Entity<PersonAddress>()
-                .HasOne(pa => pa.Address)
-                .WithMany()
-                .HasForeignKey(pa => pa.AddressId);
-
             // Configuration for Wishlist
             modelBuilder.Entity<Wishlist>()
                 .HasOne(w => w.Person)
                 .WithMany(p => p.Wishlist)
-                .HasForeignKey(w => w.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configuration for WishlistItem

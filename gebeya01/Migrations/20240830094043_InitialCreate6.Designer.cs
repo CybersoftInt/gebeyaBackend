@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using gebeya01.Models;
 
@@ -11,9 +12,11 @@ using gebeya01.Models;
 namespace gebeya01.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240830094043_InitialCreate6")]
+    partial class InitialCreate6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,15 +56,7 @@ namespace gebeya01.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZIPCode")
-                        .HasColumnType("int");
-
                     b.HasKey("AddressID");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Addresses");
                 });
@@ -112,35 +107,6 @@ namespace gebeya01.Migrations
                     b.HasKey("CategoryID");
 
                     b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("gebeya01.Models.ContactForm", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("contactForms");
                 });
 
             modelBuilder.Entity("gebeya01.Models.Order", b =>
@@ -434,7 +400,7 @@ namespace gebeya01.Migrations
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("PersonUserID")
+                    b.Property<int>("PersonUserID")
                         .HasColumnType("int");
 
                     b.Property<int>("ProductID")
@@ -457,17 +423,6 @@ namespace gebeya01.Migrations
                     b.HasIndex("WishlistID");
 
                     b.ToTable("WishlistItems");
-                });
-
-            modelBuilder.Entity("gebeya01.Models.Address", b =>
-                {
-                    b.HasOne("gebeya01.Models.Person", "Person")
-                        .WithMany("Address")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("gebeya01.Models.CartItem", b =>
@@ -580,9 +535,11 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.WishlistItem", b =>
                 {
-                    b.HasOne("gebeya01.Models.Person", null)
+                    b.HasOne("gebeya01.Models.Person", "Person")
                         .WithMany("wishlistItems")
-                        .HasForeignKey("PersonUserID");
+                        .HasForeignKey("PersonUserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("gebeya01.Models.Product", "Product")
                         .WithMany()
@@ -599,6 +556,8 @@ namespace gebeya01.Migrations
                         .HasForeignKey("WishlistID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Person");
 
                     b.Navigation("Product");
 
@@ -626,8 +585,6 @@ namespace gebeya01.Migrations
 
             modelBuilder.Entity("gebeya01.Models.Person", b =>
                 {
-                    b.Navigation("Address");
-
                     b.Navigation("Orders");
 
                     b.Navigation("ShoppingCarts");

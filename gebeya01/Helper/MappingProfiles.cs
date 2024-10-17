@@ -27,6 +27,13 @@ namespace gebeya01.Helper
             CreateMap< WishlistItem, WishlistItemDto > ();
 
 
+            CreateMap<Address, AddressDto>();
+            CreateMap<AddressDto, Address>();
+
+            CreateMap<Order, OrdersDto>();
+            CreateMap<OrdersDto, Order>();
+
+
         }
     }
 }
